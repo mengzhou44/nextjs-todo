@@ -43,7 +43,7 @@ async function getYoga() {
       graphqlEndpoint: "/api/graphql",
       fetchAPI: { Response },
       context: ({ request }) => ({ request }),
-    });
+    }) as ReturnType<typeof createYoga<Record<string, never>, GraphQLContext>>;
   }
   return yogaInstance;
 }
@@ -51,7 +51,7 @@ async function getYoga() {
 export async function GET(request: Request) {
   try {
     const yoga = await getYoga();
-    return yoga.handleRequest(request);
+    return (yoga.handleRequest as (request: Request) => Promise<Response>)(request);
   } catch (err) {
     console.error("[GraphQL] Error:", err);
     return new Response(
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const yoga = await getYoga();
-    return yoga.handleRequest(request);
+    return (yoga.handleRequest as (request: Request) => Promise<Response>)(request);
   } catch (err) {
     console.error("[GraphQL] Error:", err);
     return new Response(
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 export async function OPTIONS(request: Request) {
   try {
     const yoga = await getYoga();
-    return yoga.handleRequest(request);
+    return (yoga.handleRequest as (request: Request) => Promise<Response>)(request);
   } catch (err) {
     console.error("[GraphQL] Error:", err);
     return new Response(null, { status: 500 });

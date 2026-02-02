@@ -4,7 +4,7 @@ import type { Task } from "@/types/task";
 
 export type { Task };
 
-@ObjectType({ name: "TaskType" })
+@ObjectType("TaskType")
 export class TaskType implements Task {
   @Field(() => ID)
   id!: string;
