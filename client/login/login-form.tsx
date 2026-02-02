@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { gql } from "@apollo/client";
 import { useMutation } from "@apollo/client/react";
 import { setAccessToken } from "@/lib/apollo-client";

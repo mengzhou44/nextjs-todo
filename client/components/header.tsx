@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useUser } from "@/client/context/user-context";
 import { clearAccessToken } from "@/lib/apollo-client";
 

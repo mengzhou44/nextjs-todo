@@ -8,7 +8,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import { getAccessToken } from "@/lib/apollo-client";
 
 function decodeJwtPayload(token: string): { email?: string } | null {
@@ -31,7 +31,7 @@ interface UserContextValue {
 const UserContext = createContext<UserContextValue | null>(null);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
+  const pathname = usePathname();
   const [email, setEmail] = useState<string | null>(null);
 
   const refreshUser = useCallback(() => {
@@ -46,7 +46,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshUser();
-  }, [refreshUser, router.pathname]);
+  }, [refreshUser, pathname]);
 
   return (
     <UserContext.Provider value={{ email, refreshUser }}>

@@ -4,7 +4,9 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = "24h";
 
 if (process.env.NODE_ENV === "production" && !JWT_SECRET) {
-  throw new Error("JWT_SECRET must be set in production");
+  console.warn(
+    "JWT_SECRET is not set in production. Set it in .env.local (for npm start) or in your deployment env."
+  );
 }
 const secret = JWT_SECRET ?? "todo-app-secret";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { gql } from "@apollo/client";
 import { useMutation } from "@apollo/client/react";
 import { getAccessToken } from "@/lib/apollo-client";
@@ -35,7 +35,7 @@ const DELETE_MUTATION = gql`
   }
 `;
 
-export function Tasks({ initialTasks }: { initialTasks: Task[] }) {
+export function TaskList({ initialTasks }: { initialTasks: Task[] }) {
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [error, setError] = useState<string | null>(null);
@@ -81,35 +81,30 @@ export function Tasks({ initialTasks }: { initialTasks: Task[] }) {
   }
 
   return (
-    <main>
-      <div className="max-w-[480px] mx-auto py-12 px-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-accent">Tasks</h1>
-        </div>
-        {error && (
-          <p className="mb-4 text-sm text-red-500" role="alert">
-            {error}
-          </p>
+    <>
+      {error && (
+        <p className="mb-4 text-sm text-red-500" role="alert">
+          {error}
+        </p>
+      )}
+      <AddTaskForm onAdd={addTask} />
+      <ul className="list-none p-0 mt-6 flex flex-col gap-2">
+        {tasks.length === 0 ? (
+          <li className="py-8 text-center text-text-muted bg-surface rounded-lg border border-dashed border-border">
+            No tasks yet. Add one above.
+          </li>
+        ) : (
+          tasks.map((task: Task) => (
+            <TodoItem
+              key={task.id}
+              task={task}
+              onToggle={toggleTask}
+              onDelete={handleDelete}
+            />
+          ))
         )}
-        <AddTaskForm onAdd={addTask} />
-        <ul className="list-none p-0 mt-6 flex flex-col gap-2">
-          {tasks.length === 0 ? (
-            <li className="py-8 text-center text-text-muted bg-surface rounded-lg border border-dashed border-border">
-              No tasks yet. Add one above.
-            </li>
-          ) : (
-            tasks.map((task: Task) => (
-              <TodoItem
-                key={task.id}
-                task={task}
-                onToggle={toggleTask}
-                onDelete={handleDelete}
-              />
-            ))
-          )}
-        </ul>
-      </div>
-    </main>
+      </ul>
+    </>
   );
 }
 
