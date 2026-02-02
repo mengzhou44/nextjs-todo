@@ -1,12 +1,8 @@
 import "reflect-metadata";
 import { ObjectType, Field, ID } from "type-graphql";
+import type { Task } from "@/types/task";
 
-export interface Task {
-  id: string;
-  title: string;
-  completed: boolean;
-  createdAt: string;
-}
+export type { Task };
 
 @ObjectType()
 export class TaskType implements Task {

@@ -1,12 +1,13 @@
 import { GetServerSideProps } from "next";
-import { TodoPage } from "./_todo-page";
+import { Tasks } from "@/client/todo/tasks";
 import { getTasks } from "@/pages/api/_todo/todo.service";
 import type { Task } from "@/types/task";
 
 export default function TodoRoute({ initialTasks }: { initialTasks: Task[] }) {
-  return <TodoPage initialTasks={initialTasks} />;
+  return <Tasks initialTasks={initialTasks} />;
 }
 
+// Auth is enforced client-side (redirect when no token) and by GraphQL (JWT).
 export const getServerSideProps: GetServerSideProps<{
   initialTasks: Task[];
 }> = async () => {

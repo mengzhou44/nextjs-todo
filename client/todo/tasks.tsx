@@ -1,20 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { gql } from "@apollo/client";
-import { useQuery, useMutation } from "@apollo/client/react";
+import { useMutation } from "@apollo/client/react";
+import { getAccessToken } from "@/lib/apollo-client";
 import type { Task } from "@/types/task";
-
-const TASKS_QUERY = gql`
-  query Tasks {
-    tasks {
-      id
-      title
-      completed
-      createdAt
-    }
-  }
-`;
 
 const CREATE_MUTATION = gql`
   mutation CreateTask($title: String!) {
@@ -44,43 +35,65 @@ const DELETE_MUTATION = gql`
   }
 `;
 
-export function TodoPage({ initialTasks }: { initialTasks: Task[] }) {
-  const { data, loading } = useQuery<{ tasks: Task[] }>(TASKS_QUERY);
-  const [createTask] = useMutation(CREATE_MUTATION, {
-    refetchQueries: [{ query: TASKS_QUERY }],
-  });
-  const [updateTask] = useMutation(UPDATE_MUTATION, {
-    refetchQueries: [{ query: TASKS_QUERY }],
-  });
-  const [deleteTask] = useMutation(DELETE_MUTATION, {
-    refetchQueries: [{ query: TASKS_QUERY }],
-  });
+export function Tasks({ initialTasks }: { initialTasks: Task[] }) {
+  const router = useRouter();
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [error, setError] = useState<string | null>(null);
 
-  const tasks = data?.tasks ?? initialTasks ?? [];
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
+
+  useEffect(() => {
+    if (!getAccessToken()) {
+      router.replace("/login");
+    }
+  }, [router]);
+
+  const [createTaskMutation] = useMutation<{ createTask: Task }>(CREATE_MUTATION, {
+    onError: (err) => setError(err.message),
+  });
+  const [updateTaskMutation] = useMutation<{ updateTask: Task | null }>(UPDATE_MUTATION, {
+    onError: (err) => setError(err.message),
+  });
+  const [deleteTaskMutation] = useMutation<{ deleteTask: boolean }>(DELETE_MUTATION, {
+    onError: (err) => setError(err.message),
+  });
 
   async function addTask(title: string) {
-    await createTask({ variables: { title } });
+    setError(null);
+    const result = await createTaskMutation({ variables: { title } });
+    const newTask = result.data?.createTask;
+    if (newTask) setTasks((prev) => [...prev, newTask]);
   }
 
   async function toggleTask(id: string, completed: boolean) {
-    await updateTask({ variables: { id, completed } });
+    setError(null);
+    const result = await updateTaskMutation({ variables: { id, completed } });
+    const updated = result.data?.updateTask;
+    if (updated) setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
   }
 
   async function handleDelete(id: string) {
-    await deleteTask({ variables: { id } });
+    setError(null);
+    const result = await deleteTaskMutation({ variables: { id } });
+    if (result.data?.deleteTask) setTasks((prev) => prev.filter((t) => t.id !== id));
   }
 
   return (
     <main>
       <div className="max-w-[480px] mx-auto py-12 px-6">
-        <h1 className="text-3xl font-bold mb-6 text-accent">Tasks</h1>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-accent">Tasks</h1>
+        </div>
+        {error && (
+          <p className="mb-4 text-sm text-red-500" role="alert">
+            {error}
+          </p>
+        )}
         <AddTaskForm onAdd={addTask} />
         <ul className="list-none p-0 mt-6 flex flex-col gap-2">
-          {loading && tasks.length === 0 ? (
-            <li className="py-8 text-center text-text-muted bg-surface rounded-lg border border-dashed border-border">
-              Loading…
-            </li>
-          ) : tasks.length === 0 ? (
+          {tasks.length === 0 ? (
             <li className="py-8 text-center text-text-muted bg-surface rounded-lg border border-dashed border-border">
               No tasks yet. Add one above.
             </li>
